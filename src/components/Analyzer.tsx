@@ -1,0 +1,982 @@
+"use client";
+
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  analyzeFile,
+  type AnalysisResult,
+} from "@/lib/audioAnalysis";
+import { SHARE_URL, shareOrDownload } from "@/lib/shareImage";
+
+type Status = "idle" | "analyzing" | "done" | "error";
+
+const STEPS = [
+  { key: "read", label: "Lendo arquivo", match: /Lendo/i },
+  { key: "decode", label: "Decodificando áudio", match: /Decodificando/i },
+  { key: "analyze", label: "Analisando forma de onda", match: /Analisando/i },
+  { key: "transcribe", label: "Transcrevendo áudio", match: /Transcrevendo/i },
+];
+
+export default function Analyzer() {
+  const [status, setStatus] = useState<Status>("idle");
+  const [progress, setProgress] = useState("");
+  const [error, setError] = useState("");
+  const [fileName, setFileName] = useState("");
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
+  const [protocolo] = useState(() => makeProtocolo());
+
+  const lastUrlRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (lastUrlRef.current) URL.revokeObjectURL(lastUrlRef.current);
+    };
+  }, []);
+
+  const handleFile = useCallback(async (file: File) => {
+    setError("");
+    setResult(null);
+    setStatus("analyzing");
+    setFileName(file.name);
+
+    if (lastUrlRef.current) URL.revokeObjectURL(lastUrlRef.current);
+    const url = URL.createObjectURL(file);
+    lastUrlRef.current = url;
+    setAudioUrl(url);
+
+    try {
+      const r = await analyzeFile(file, setProgress);
+      setResult(r);
+      setStatus("done");
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Erro desconhecido.");
+      setStatus("error");
+    } finally {
+      setProgress("");
+    }
+  }, []);
+
+  const onDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragging(false);
+      const file = e.dataTransfer.files?.[0];
+      if (file) void handleFile(file);
+    },
+    [handleFile],
+  );
+
+  const reset = useCallback(() => {
+    setStatus("idle");
+    setResult(null);
+    setError("");
+    setFileName("");
+    setAudioUrl(null);
+    if (lastUrlRef.current) URL.revokeObjectURL(lastUrlRef.current);
+    lastUrlRef.current = null;
+  }, []);
+
+  return (
+    <div className="w-full max-w-3xl flex flex-col gap-8">
+      <Hero />
+
+      {status === "idle" && (
+        <DropZone
+          isDragging={isDragging}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setIsDragging(true);
+          }}
+          onDragLeave={() => setIsDragging(false)}
+          onDrop={onDrop}
+          onFile={handleFile}
+        />
+      )}
+
+      {status === "analyzing" && (
+        <AnalyzingPanel fileName={fileName} progress={progress} />
+      )}
+
+      {status === "error" && (
+        <div className="rounded-2xl border-2 border-red-300 dark:border-red-900/60 bg-red-50 dark:bg-red-950/30 p-6">
+          <p className="font-mono text-[10px] uppercase tracking-widest text-red-700/70 dark:text-red-400/70">
+            Falha no laudo
+          </p>
+          <p className="mt-1 font-medium text-red-700 dark:text-red-300">
+            Não foi possível analisar este arquivo.
+          </p>
+          <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>
+          <button
+            onClick={reset}
+            className="mt-4 rounded-full bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+          >
+            Tentar outro arquivo
+          </button>
+        </div>
+      )}
+
+      {status === "done" && result && (
+        <Results
+          result={result}
+          fileName={fileName}
+          audioUrl={audioUrl}
+          protocolo={protocolo}
+          onReset={reset}
+        />
+      )}
+
+      <FooterMission />
+    </div>
+  );
+}
+
+function makeProtocolo() {
+  const n = Math.floor(Math.random() * 9999)
+    .toString()
+    .padStart(4, "0");
+  const yr = new Date().getFullYear();
+  return `BR-${yr}/${n}`;
+}
+
+function Hero() {
+  return (
+    <div className="flex flex-col gap-5">
+      <div className="flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-500">
+        <span className="inline-block h-px w-8 bg-zinc-400 dark:bg-zinc-700" />
+        <span>Análise de tom e transcrição de áudio</span>
+      </div>
+
+      <div className="flex items-center gap-4">
+        <Seal />
+        <div>
+          <h1 className="text-3xl sm:text-5xl font-bold tracking-tight leading-none">
+            ToneLens
+          </h1>
+          <p className="mt-2 font-mono text-[11px] uppercase tracking-wider text-zinc-500 dark:text-zinc-500">
+            Identifique o tom da voz e veja a transcrição instantânea
+          </p>
+        </div>
+      </div>
+
+      <div className="rounded-xl border-2 border-zinc-900 dark:border-zinc-100 p-5 paper-bg">
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-900 dark:text-zinc-100">
+          ↳ Utilidade Pública
+        </p>
+        <p className="mt-3 text-base sm:text-lg leading-relaxed text-zinc-900 dark:text-zinc-100">
+          O <strong>ToneLens</strong> te ajuda a entender o tom emocional do áudio
+          e traz uma primeira visão do conteúdo falado. Use este arquivo para
+          descobrir se a mensagem está calma, preocupada ou urgente.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function Seal() {
+  return (
+    <span
+      aria-hidden
+      className="relative inline-flex h-16 w-16 items-center justify-center rounded-full border-[3px] border-zinc-900 dark:border-zinc-100 bg-amber-400 text-zinc-900 shadow-[0_4px_0_0_rgba(0,0,0,0.9)] dark:shadow-[0_4px_0_0_rgba(255,255,255,0.6)]"
+    >
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth={2.3}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="h-8 w-8"
+      >
+        <path d="M3 12h2l2-5 3 10 3-14 3 18 3-12 2 3h2" />
+      </svg>
+      <span className="absolute -inset-1 rounded-full border border-dashed border-zinc-900/40 dark:border-zinc-100/40" />
+    </span>
+  );
+}
+
+interface DropZoneProps {
+  isDragging: boolean;
+  onDragOver: (e: React.DragEvent) => void;
+  onDragLeave: () => void;
+  onDrop: (e: React.DragEvent) => void;
+  onFile: (f: File) => void;
+}
+
+function DropZone({
+  isDragging,
+  onDragOver,
+  onDragLeave,
+  onDrop,
+  onFile,
+}: DropZoneProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  return (
+    <div
+      onDragOver={onDragOver}
+      onDragLeave={onDragLeave}
+      onDrop={onDrop}
+      onClick={() => inputRef.current?.click()}
+      className={`group relative cursor-pointer rounded-2xl border-[3px] border-dashed p-10 sm:p-14 text-center transition ${
+        isDragging
+          ? "border-amber-500 bg-amber-50 dark:bg-amber-950/30"
+          : "border-zinc-900 dark:border-zinc-100 bg-white dark:bg-zinc-950 hover:bg-amber-50/50 dark:hover:bg-amber-950/10"
+      }`}
+    >
+      <input
+        ref={inputRef}
+        type="file"
+        accept="audio/*,video/*"
+        className="hidden"
+        onChange={(e) => {
+          const f = e.target.files?.[0];
+          if (f) onFile(f);
+          e.target.value = "";
+        }}
+      />
+      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-500">
+        Central de áudio
+      </p>
+      <p className="mt-3 text-xl sm:text-2xl font-bold tracking-tight">
+        Envie seu áudio para analisar o tom
+      </p>
+      <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
+        Arraste e solte ou clique para selecionar.
+        <br className="hidden sm:block" />
+        Aceitamos MP3, WAV, M4A, OGG, MP4, WebM.
+      </p>
+      <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-zinc-900 dark:border-zinc-100 px-4 py-1.5 text-xs font-medium">
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+        Análise 100% local — nada sai do seu aparelho
+      </div>
+    </div>
+  );
+}
+
+function AnalyzingPanel({
+  fileName,
+  progress,
+}: {
+  fileName: string;
+  progress: string;
+}) {
+  const currentIdx = useMemo(() => {
+    const idx = STEPS.findIndex((s) => s.match.test(progress));
+    return idx === -1 ? 0 : idx;
+  }, [progress]);
+
+  return (
+    <div className="rounded-2xl border-2 border-zinc-900 dark:border-zinc-100 paper-bg p-6">
+      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-500">
+        Analisando tom e transcrição
+      </p>
+      <p className="mt-1 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
+        Aguarde, extraindo o tom do áudio…
+      </p>
+
+      <ul className="mt-5 space-y-2 font-mono text-sm">
+        {STEPS.map((step, i) => {
+          const done = i < currentIdx;
+          const active = i === currentIdx;
+          return (
+            <li
+              key={step.key}
+              className={`flex items-center gap-3 ${
+                done
+                  ? "text-emerald-700 dark:text-emerald-400"
+                  : active
+                    ? "text-zinc-900 dark:text-zinc-100"
+                    : "text-zinc-400 dark:text-zinc-600"
+              }`}
+            >
+              <span className="inline-flex h-5 w-7 items-center justify-center rounded border border-current text-[10px] font-bold">
+                {done ? "OK" : active ? "···" : ""}
+              </span>
+              <span className="uppercase tracking-wider text-xs">
+                {step.label}
+              </span>
+              {active && (
+                <span className="ml-auto inline-block h-2 w-2 animate-pulse rounded-full bg-current" />
+              )}
+            </li>
+          );
+        })}
+      </ul>
+
+      <p className="mt-5 truncate font-mono text-[11px] uppercase tracking-wider text-zinc-500 dark:text-zinc-500">
+        Arquivo: {fileName}
+      </p>
+    </div>
+  );
+}
+
+interface ResultsProps {
+  result: AnalysisResult;
+  fileName: string;
+  audioUrl: string | null;
+  protocolo: string;
+  onReset: () => void;
+}
+
+function Results({
+  result,
+  fileName,
+  audioUrl,
+  protocolo,
+  onReset,
+}: ResultsProps) {
+  return (
+    <div className="flex flex-col gap-6">
+      <LaudoPanel result={result} fileName={fileName} protocolo={protocolo} />
+      <ShareButton result={result} fileName={fileName} protocolo={protocolo} />
+      <TranscriptPanel transcript={result.transcript} tone={result.tone} />
+      <WaveformPanel result={result} />
+      <EvidencePanel result={result} />
+      {audioUrl && <ListenPanel result={result} audioUrl={audioUrl} />}
+
+      <button
+        onClick={onReset}
+        className="self-start rounded-full border-2 border-zinc-900 dark:border-zinc-100 bg-white dark:bg-zinc-950 px-5 py-2.5 text-sm font-semibold uppercase tracking-wider hover:bg-zinc-900 hover:text-white dark:hover:bg-zinc-100 dark:hover:text-zinc-900 transition"
+      >
+        Periciar novo arquivo
+      </button>
+    </div>
+  );
+}
+
+function ShareButton({
+  result,
+  fileName,
+  protocolo,
+}: {
+  result: AnalysisResult;
+  fileName: string;
+  protocolo: string;
+}) {
+  const [state, setState] = useState<
+    "idle" | "generating" | "shared" | "downloaded" | "error"
+  >("idle");
+  const [errMsg, setErrMsg] = useState("");
+
+  const onClick = useCallback(async () => {
+    if (state === "generating") return;
+    setState("generating");
+    setErrMsg("");
+    try {
+      const outcome = await shareOrDownload({ result, fileName, protocolo });
+      setState(outcome);
+      setTimeout(() => setState("idle"), 3500);
+    } catch (e) {
+      if ((e as DOMException)?.name === "AbortError") {
+        setState("idle");
+        return;
+      }
+      setErrMsg(e instanceof Error ? e.message : "Falha ao compartilhar.");
+      setState("error");
+    }
+  }, [state, result, fileName, protocolo]);
+
+  const label = {
+    idle: "Compartilhar relatório",
+    generating: "Gerando PDF…",
+    shared: "Compartilhado!",
+    downloaded: "PDF baixado — pronto pra mandar",
+    error: "Erro — tentar de novo",
+  }[state];
+
+  const sub = {
+    idle: "WhatsApp · Instagram · download em PDF",
+    generating: "Aguarde, montando relatório de tom…",
+    shared: "Relatório pronto para compartilhar.",
+    downloaded: "PDF salvo no seu aparelho.",
+    error: errMsg || "Tente novamente.",
+  }[state];
+
+  const disabled = state === "generating";
+
+  return (
+    <div className="flex flex-col gap-2">
+      <button
+        onClick={onClick}
+        disabled={disabled}
+        className="group relative w-full overflow-hidden rounded-2xl border-2 border-zinc-900 dark:border-zinc-100 bg-amber-400 px-6 py-5 text-zinc-900 shadow-[0_4px_0_0_rgba(0,0,0,0.9)] hover:translate-y-0.5 hover:shadow-[0_2px_0_0_rgba(0,0,0,0.9)] active:translate-y-1 active:shadow-none transition disabled:opacity-70 disabled:cursor-wait"
+      >
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4 text-left">
+            <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-amber-400">
+              {state === "generating" ? (
+                <span className="h-5 w-5 animate-spin rounded-full border-2 border-amber-400/30 border-t-amber-400" />
+              ) : (
+                <ShareIcon />
+              )}
+            </span>
+            <div>
+              <p className="text-lg sm:text-xl font-bold tracking-tight">
+                {label}
+              </p>
+              <p className="font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.18em] opacity-80">
+                {sub}
+              </p>
+            </div>
+          </div>
+          <span className="hidden sm:block font-mono text-[10px] uppercase tracking-widest opacity-70">
+            PDF · documento oficial
+          </span>
+        </div>
+        <span className="hazard-stripes absolute inset-x-0 bottom-0 h-1.5" />
+      </button>
+      <p className="text-[11px] text-zinc-500 dark:text-zinc-500 text-center">
+        O laudo gerado leva sua marca de prevenção em{" "}
+        <a
+          href={SHARE_URL}
+          target="_blank"
+          rel="noreferrer"
+          className="underline decoration-amber-500 underline-offset-2"
+        >
+          amad3eu.deno.dev
+        </a>
+        .
+      </p>
+    </div>
+  );
+}
+
+function TranscriptPanel({
+  transcript,
+  tone,
+}: {
+  transcript: string;
+  tone: AnalysisResult["tone"];
+}) {
+  return (
+    <div className="rounded-2xl border-2 border-zinc-900 dark:border-zinc-100 bg-white dark:bg-zinc-950 overflow-hidden">
+      <div className="border-b-2 border-zinc-900/10 dark:border-zinc-100/10 px-5 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-500">
+        Transcrição automática
+      </div>
+      <div className="p-5 space-y-4">
+        <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 p-4">
+          <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
+            Tom detectado: <span className="font-bold">{tone.label}</span>
+          </p>
+          <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+            {tone.description}
+          </p>
+        </div>
+        <div>
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-500">
+            Texto estimado
+          </p>
+          <p className="mt-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-4 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
+            {transcript}
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ShareIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2.2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="h-5 w-5"
+    >
+      <path d="M4 12v7a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-7" />
+      <path d="M16 6l-4-4-4 4" />
+      <path d="M12 2v14" />
+    </svg>
+  );
+}
+
+const VERDICT_COPY = {
+  safe: {
+    stamp: "APROVADO",
+    sub: "Tom calmo",
+    title: "Áudio liberado para reprodução",
+    body:
+      "Não foram identificados sinais de tom agressivo ou urgente. Você pode ouvir com tranquilidade, mas mantenha o bom senso.",
+    color: "emerald",
+  },
+  suspect: {
+    stamp: "SUSPEITO",
+    sub: "Tom moderado",
+    title: "Atenção: reproduza com cuidado",
+    body:
+      "Detectamos um tom mais carregado do que o habitual. Recomendamos fone de ouvido e volume baixo.",
+    color: "amber",
+  },
+  danger: {
+    stamp: "REPROVADO",
+    sub: "Tom agressivo",
+    title: "Alerta máximo — voz intensa detectada",
+    body:
+      "O áudio apresenta sinais de tom muito forte ou urgente. Reduza o volume antes de tocar e prefira ouvir com atenção.",
+    color: "red",
+  },
+} as const;
+
+function LaudoPanel({
+  result,
+  fileName,
+  protocolo,
+}: {
+  result: AnalysisResult;
+  fileName: string;
+  protocolo: string;
+}) {
+  const v = VERDICT_COPY[result.verdict];
+  const colorMap = {
+    emerald: {
+      stamp: "text-emerald-700 border-emerald-700",
+      title: "text-emerald-800 dark:text-emerald-300",
+      ring: "ring-emerald-300/60 dark:ring-emerald-700/40",
+    },
+    amber: {
+      stamp: "text-amber-700 border-amber-700",
+      title: "text-amber-800 dark:text-amber-300",
+      ring: "ring-amber-300/60 dark:ring-amber-700/40",
+    },
+    red: {
+      stamp: "text-red-700 border-red-700",
+      title: "text-red-800 dark:text-red-300",
+      ring: "ring-red-300/60 dark:ring-red-700/40",
+    },
+  }[v.color];
+
+  const dateStr = useMemo(() => {
+    return new Date().toLocaleString("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  }, []);
+
+  return (
+    <div className="rounded-2xl border-2 border-zinc-900 dark:border-zinc-100 paper-bg overflow-hidden">
+      <div className="flex items-center justify-between border-b-2 border-dashed border-zinc-900/40 dark:border-zinc-100/30 px-5 py-3 font-mono text-[10px] uppercase tracking-[0.2em]">
+        <span>Laudo Técnico nº {protocolo}</span>
+        <span className="text-zinc-500">{dateStr}</span>
+      </div>
+
+      <div className="grid sm:grid-cols-[1fr_auto] gap-6 p-6 sm:p-8 items-center">
+        <div>
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-500">
+            Veredito
+          </p>
+          <h2 className={`mt-1 text-2xl sm:text-3xl font-bold leading-tight ${colorMap.title}`}>
+            {v.title}
+          </h2>
+          <p className="mt-3 text-sm sm:text-base text-zinc-700 dark:text-zinc-300 leading-relaxed">
+            {v.body}
+          </p>
+
+          <div className="mt-5">
+            <div className="flex items-baseline justify-between">
+              <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-500">
+                Índice de intensidade vocal
+              </span>
+              <span className={`text-2xl font-bold tabular-nums ${colorMap.title}`}>
+                {result.dangerScore}
+                <span className="text-sm font-medium opacity-70">/100</span>
+              </span>
+            </div>
+            <div className="mt-2 h-3 w-full overflow-hidden rounded-full border border-zinc-900/30 dark:border-zinc-100/30 bg-white/60 dark:bg-zinc-900/60">
+              <div
+                className="h-full rounded-full bg-linear-to-r from-emerald-400 via-amber-400 to-red-500 transition-[width] duration-700"
+                style={{ width: `${result.dangerScore}%` }}
+              />
+            </div>
+            <div className="mt-1 flex justify-between font-mono text-[9px] uppercase tracking-widest text-zinc-500 dark:text-zinc-500">
+              <span>seguro</span>
+              <span>suspeito</span>
+              <span>perigo</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex justify-center sm:justify-end">
+          <Stamp text={v.stamp} sub={v.sub} className={colorMap.stamp} />
+        </div>
+      </div>
+
+      <div
+        className={`border-t-2 border-dashed border-zinc-900/40 dark:border-zinc-100/30 px-5 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-500 truncate ring-inset ${colorMap.ring}`}
+      >
+        Arquivo periciado: {fileName}
+      </div>
+    </div>
+  );
+}
+
+function Stamp({
+  text,
+  sub,
+  className,
+}: {
+  text: string;
+  sub: string;
+  className: string;
+}) {
+  return (
+    <div className="relative">
+      <div
+        className={`stamp-anim inline-flex flex-col items-center justify-center rounded-md border-[3px] px-6 py-3 font-bold uppercase tracking-[0.18em] shadow-[inset_0_0_0_2px_currentColor] ${className}`}
+        style={{ transform: "rotate(-6deg)" }}
+      >
+        <span className="text-2xl sm:text-3xl leading-none">{text}</span>
+        <span className="mt-1.5 text-[9px] tracking-[0.3em] opacity-80">
+          {sub}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+function WaveformPanel({ result }: { result: AnalysisResult }) {
+  return (
+    <div className="rounded-2xl border-2 border-zinc-900 dark:border-zinc-100 bg-white dark:bg-zinc-950 overflow-hidden">
+      <div className="flex items-center justify-between border-b-2 border-zinc-900/10 dark:border-zinc-100/10 px-5 py-3">
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-500">
+          Análise da forma de onda
+        </p>
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-500">
+          {result.durationSec.toFixed(1)}s · {result.sampleRate} Hz ·{" "}
+          {result.numChannels === 1 ? "mono" : "estéreo"}
+        </p>
+      </div>
+      <div className="p-5">
+        <Waveform result={result} />
+      </div>
+    </div>
+  );
+}
+
+function Waveform({ result }: { result: AnalysisResult }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const [wrapWidth, setWrapWidth] = useState(0);
+
+  useEffect(() => {
+    if (!wrapRef.current) return;
+    const ro = new ResizeObserver((entries) => {
+      const w = entries[0]?.contentRect.width ?? 0;
+      setWrapWidth(w);
+    });
+    ro.observe(wrapRef.current);
+    return () => ro.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || wrapWidth === 0) return;
+    const dpr = window.devicePixelRatio || 1;
+    const cssW = wrapWidth;
+    const cssH = 180;
+    canvas.width = cssW * dpr;
+    canvas.height = cssH * dpr;
+    canvas.style.height = `${cssH}px`;
+    canvas.style.width = `${cssW}px`;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+    ctx.scale(dpr, dpr);
+
+    const isDark =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-color-scheme: dark)").matches;
+
+    ctx.clearRect(0, 0, cssW, cssH);
+
+    for (let y = 0; y < cssH; y += 24) {
+      ctx.fillStyle = isDark ? "#18181b" : "#fafafa";
+      if ((y / 24) % 2 === 0) ctx.fillRect(0, y, cssW, 24);
+    }
+    ctx.strokeStyle = isDark ? "#27272a" : "#e4e4e7";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, cssH / 2);
+    ctx.lineTo(cssW, cssH / 2);
+    ctx.stroke();
+
+    const rms = result.rms;
+    const n = rms.length;
+    if (n === 0) return;
+    const max = Math.max(result.maxRms, 0.001);
+
+    const buckets = Math.max(40, Math.floor(cssW / 2));
+    const perBucket = Math.max(1, Math.floor(n / buckets));
+    const barWidth = cssW / buckets;
+
+    for (let b = 0; b < buckets; b++) {
+      let bMax = 0;
+      const start = b * perBucket;
+      const end = Math.min(n, start + perBucket);
+      for (let i = start; i < end; i++) {
+        if (rms[i] > bMax) bMax = rms[i];
+      }
+      const ratio = bMax / max;
+      const h = ratio * (cssH - 24);
+      const x = b * barWidth;
+
+      const hue = 130 - ratio * 130;
+      const sat = 60 + ratio * 20;
+      const lit = isDark ? 50 + ratio * 5 : 45 - ratio * 5;
+      ctx.fillStyle = `hsl(${hue}, ${sat}%, ${lit}%)`;
+      ctx.fillRect(
+        x,
+        (cssH - h) / 2,
+        Math.max(1, barWidth - 0.5),
+        h,
+      );
+    }
+
+    if (result.jump) {
+      const xJump = (result.jump.endSec / result.durationSec) * cssW;
+      const xStart =
+        (result.jump.startSec / result.durationSec) * cssW;
+      ctx.fillStyle = isDark
+        ? "rgba(239,68,68,0.10)"
+        : "rgba(239,68,68,0.10)";
+      ctx.fillRect(xStart, 0, Math.max(2, xJump - xStart), cssH);
+
+      ctx.strokeStyle = "#ef4444";
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 4]);
+      ctx.beginPath();
+      ctx.moveTo(xJump, 0);
+      ctx.lineTo(xJump, cssH);
+      ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  }, [result, wrapWidth]);
+
+  const calloutLeftPct = useMemo(() => {
+    if (!result.jump || result.durationSec === 0) return null;
+    return (result.jump.endSec / result.durationSec) * 100;
+  }, [result]);
+
+  const calloutText = useMemo(() => {
+    if (!result.jump) return null;
+    if (result.verdict === "danger") return "Momento do ataque";
+    if (result.verdict === "suspect") return "Padrão suspeito";
+    return "Pico detectado";
+  }, [result]);
+
+  return (
+    <div>
+      <div ref={wrapRef} className="relative">
+        <canvas ref={canvasRef} className="block w-full" />
+        {calloutLeftPct !== null && calloutText && (
+          <Callout leftPct={calloutLeftPct} label={calloutText} />
+        )}
+        {!result.jump && (
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <span className="rounded-full border border-emerald-400/70 bg-white/80 dark:bg-zinc-900/80 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-emerald-700 dark:text-emerald-400">
+              Sem salto de volume suspeito
+            </span>
+          </div>
+        )}
+      </div>
+
+      <div className="mt-3 flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-zinc-500 dark:text-zinc-500">
+        <span>00:00</span>
+        <span>
+          {result.jump
+            ? `Salto em ${result.jump.endSec.toFixed(1)}s — ${result.jump.ratio.toFixed(1)}× mais alto`
+            : `Pico em ${result.maxRmsAtSec.toFixed(1)}s`}
+        </span>
+        <span>{formatTime(result.durationSec)}</span>
+      </div>
+    </div>
+  );
+}
+
+function Callout({ leftPct, label }: { leftPct: number; label: string }) {
+  const clamped = Math.max(6, Math.min(94, leftPct));
+  const flipLeft = clamped > 70;
+  return (
+    <div
+      className="callout-anim absolute top-2 -translate-x-1/2 pointer-events-none"
+      style={{ left: `${clamped}%` }}
+    >
+      <div
+        className={`relative rounded-md border-2 border-red-600 bg-white dark:bg-zinc-950 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-red-700 dark:text-red-400 whitespace-nowrap ${flipLeft ? "-translate-x-[calc(100%-40px)]" : "translate-x-0"}`}
+      >
+        ↓ {label}
+      </div>
+    </div>
+  );
+}
+
+function formatTime(s: number) {
+  const m = Math.floor(s / 60);
+  const sec = Math.floor(s % 60);
+  return `${m.toString().padStart(2, "0")}:${sec.toString().padStart(2, "0")}`;
+}
+
+function EvidencePanel({ result }: { result: AnalysisResult }) {
+  const items: Array<{ label: string; value: string; hint: string }> = [
+    {
+      label: "Razão pico/fundo",
+      value: `${result.spikeRatio.toFixed(1)}×`,
+      hint: "trecho mais alto vs. silêncio",
+    },
+    {
+      label: "Pico de amplitude",
+      value: result.peakAmplitude.toFixed(2),
+      hint: "1.00 = saturado",
+    },
+    {
+      label: "Taxa de cruzamentos zero",
+      value: `${result.zeroCrossingRate.toFixed(0)} /s`,
+      hint: "indica ruído e agressividade",
+    },
+    {
+      label: "Centroide espectral",
+      value: `${Math.round(result.spectralCentroid)} Hz`,
+      hint: "tonalidade grave vs. aguda",
+    },
+    {
+      label: "Energia alta frequência",
+      value: `${(result.highFreqEnergyRatio * 100).toFixed(1)}%`,
+      hint: "quanto do áudio é brilhante",
+    },
+    {
+      label: "Saturação",
+      value: `${(result.clippingRatio * 100).toFixed(2)}%`,
+      hint: "amostras estouradas",
+    },
+    {
+      label: "Trecho alto contínuo",
+      value: `${result.loudSustainedSec.toFixed(1)}s`,
+      hint: "duração acima de 60% do pico",
+    },
+  ];
+
+  return (
+    <div className="rounded-2xl border-2 border-zinc-900 dark:border-zinc-100 bg-white dark:bg-zinc-950 overflow-hidden">
+      <div className="border-b-2 border-zinc-900/10 dark:border-zinc-100/10 px-5 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-500">
+        Evidências técnicas
+      </div>
+      <div className="grid grid-cols-2 sm:grid-cols-4 divide-x-2 divide-y-2 sm:divide-y-0 divide-zinc-900/10 dark:divide-zinc-100/10">
+        {items.map((it) => (
+          <div key={it.label} className="p-4">
+            <p className="font-mono text-[10px] uppercase tracking-wider text-zinc-500 dark:text-zinc-500">
+              {it.label}
+            </p>
+            <p className="mt-2 text-xl font-bold tabular-nums">{it.value}</p>
+            <p className="mt-1 text-[10px] leading-tight text-zinc-400 dark:text-zinc-500">
+              {it.hint}
+            </p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ListenPanel({
+  result,
+  audioUrl,
+}: {
+  result: AnalysisResult;
+  audioUrl: string;
+}) {
+  const isRisky = result.verdict !== "safe";
+  return (
+    <div className="rounded-2xl border-2 border-zinc-900 dark:border-zinc-100 bg-white dark:bg-zinc-950 overflow-hidden">
+      {isRisky && <div className="hazard-stripes h-3" />}
+      <div className="p-5">
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-500">
+          Reprodução controlada
+        </p>
+        <p className="mt-1 text-sm text-zinc-700 dark:text-zinc-300">
+          {result.verdict === "danger"
+            ? "Por sua conta e risco. Reduza o volume antes de tocar."
+            : result.verdict === "suspect"
+              ? "Recomendamos fone de ouvido e volume baixo."
+              : "Pode ouvir à vontade."}
+        </p>
+        <audio
+          controls
+          src={audioUrl}
+          className="mt-3 w-full"
+          preload="metadata"
+        />
+      </div>
+      {isRisky && <div className="hazard-stripes h-3" />}
+    </div>
+  );
+}
+
+function FooterMission() {
+  return (
+    <div className="border-t-2 border-dashed border-zinc-900/30 dark:border-zinc-100/20 pt-5 space-y-4">
+      <div>
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-500">
+          Sobre esta versão
+        </p>
+        <p className="mt-2 text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
+            <strong>V1 — heurística de tom.</strong> Identificamos saltos
+            repentinos de RMS, saturação e picos típicos de voz intensa.
+            A versão V2 incluirá comparação por fingerprint contra exemplos de
+            tom para melhorar a precisão investigativa.
+        </p>
+      </div>
+
+      <div className="rounded-lg border border-dashed border-zinc-900/40 dark:border-zinc-100/30 paper-bg p-4">
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-700 dark:text-zinc-300">
+          Aviso oficial · leia com seriedade
+        </p>
+        <p className="mt-2 text-xs leading-relaxed text-zinc-700 dark:text-zinc-300">
+          O ToneLens é um protótipo experimental. Não há departamento, não há
+          laudo oficial e não há garantia nenhuma — apenas uma análise inicial.
+          O sistema pode errar em qualquer direção: detectar um tom mais forte
+          ou avaliar mal uma mensagem tranquila. Use por sua conta e risco.
+        </p>
+      </div>
+
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+        <p className="text-xs text-zinc-600 dark:text-zinc-400">
+          Desenvolvido por{" "}
+          <a
+            href="https://amad3eu.deno.dev"
+            target="_blank"
+            rel="noreferrer"
+            className="font-semibold text-zinc-900 dark:text-zinc-100 underline decoration-amber-500 decoration-2 underline-offset-2 hover:decoration-amber-400"
+          >
+            amad3eu
+          </a>
+        </p>
+        <a
+          href="https://github.com/amad3eu"
+          target="_blank"
+          rel="noreferrer"
+          className="inline-flex items-center gap-2 rounded-full border-2 border-zinc-900 dark:border-zinc-100 bg-white dark:bg-zinc-950 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider hover:bg-zinc-900 hover:text-white dark:hover:bg-zinc-100 dark:hover:text-zinc-900 transition"
+        >
+          <GithubIcon />
+          Projeto open source
+        </a>
+      </div>
+    </div>
+  );
+}
+
+function GithubIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden="true"
+      className="h-4 w-4"
+    >
+      <path d="M12 .5C5.65.5.5 5.65.5 12c0 5.08 3.29 9.39 7.86 10.91.58.1.79-.25.79-.56v-2.02c-3.2.7-3.87-1.36-3.87-1.36-.52-1.33-1.27-1.68-1.27-1.68-1.04-.71.08-.7.08-.7 1.15.08 1.76 1.18 1.76 1.18 1.02 1.75 2.68 1.24 3.34.95.1-.74.4-1.24.72-1.53-2.55-.29-5.23-1.27-5.23-5.66 0-1.25.45-2.27 1.18-3.07-.12-.29-.51-1.45.11-3.02 0 0 .96-.31 3.15 1.17a10.94 10.94 0 0 1 5.76 0c2.19-1.48 3.15-1.17 3.15-1.17.62 1.57.23 2.73.11 3.02.74.8 1.18 1.82 1.18 3.07 0 4.4-2.69 5.36-5.25 5.65.41.35.78 1.05.78 2.12v3.14c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12C23.5 5.65 18.35.5 12 .5z" />
+    </svg>
+  );
+}
