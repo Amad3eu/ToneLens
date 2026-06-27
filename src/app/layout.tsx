@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import BuyMeACoffeeWidget from "@/components/BuyMeACoffeeWidget";
 
 export const metadata: Metadata = {
   title: "ToneLens — Análise de tom e transcrição de voz",
@@ -19,7 +20,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" className="h-full antialiased">
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+        <BuyMeACoffeeWidget />
+      </body>
     </html>
   );
 }

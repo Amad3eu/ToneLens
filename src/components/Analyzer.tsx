@@ -6,6 +6,7 @@ import {
   type AnalysisResult,
 } from "@/lib/audioAnalysis";
 import { SHARE_URL, shareOrDownload } from "@/lib/shareImage";
+import Script from "next/script";
 
 type Status = "idle" | "analyzing" | "done" | "error";
 
@@ -216,7 +217,7 @@ function DropZone({
       <input
         ref={inputRef}
         type="file"
-        accept="audio/*,video/*"
+        accept="audio/mpeg,audio/wav,audio/mp4,audio/aac,audio/ogg,video/mp4,video/webm"
         className="hidden"
         onChange={(e) => {
           const f = e.target.files?.[0];
@@ -231,7 +232,7 @@ function DropZone({
         Selecione o arquivo e inicie a análise
       </p>
       <p className="mt-2 max-w-xl text-sm leading-6 text-[rgba(255,255,255,0.72)]">
-        Arraste ou toque para carregar. Suporta áudio e vídeo com processamento local rápido.
+        Arraste ou toque para carregar. Formatos aceitos: MP3, WAV, M4A, AAC, OGG, WEBM e MP4.
       </p>
       <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-[rgba(255,182,178,0.4)] bg-[rgba(255,255,255,0.05)] px-4 py-2 text-xs font-semibold text-[rgba(255,225,221,0.9)]">
         <span className="inline-block h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
@@ -929,7 +930,7 @@ function FooterMission() {
         </p>
       </div>
 
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
+      <div className="flex flex-col gap-3 pt-2 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs text-[rgba(255,255,255,0.65)]">
           Desenvolvido por{" "}
           <a
@@ -941,15 +942,30 @@ function FooterMission() {
             amad3eu
           </a>
         </p>
-        <a
-          href="https://github.com/amad3eu"
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center gap-2 rounded-full border border-[rgba(255,182,178,0.35)] bg-[rgba(255,255,255,0.05)] px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-rose-100 hover:bg-[rgba(255,182,178,0.14)] transition"
-        >
-          <GithubIcon />
-          Projeto open source
-        </a>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <a
+            href="https://github.com/amad3eu"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 rounded-full border border-[rgba(255,182,178,0.35)] bg-[rgba(255,255,255,0.08)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-rose-100 shadow-[0_10px_24px_rgba(0,0,0,0.18)] transition hover:-translate-y-0.5 hover:bg-[rgba(255,182,178,0.16)]"
+          >
+            <GithubIcon />
+            Ver projeto no GitHub
+          </a>
+
+          <a
+            href="https://www.buymeacoffee.com/Amad3eu"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center gap-2 rounded-full border border-[rgba(255,182,178,0.35)] bg-[rgba(255,182,178,0.16)] px-4 py-2 text-xs font-semibold uppercase tracking-[0.22em] text-rose-100 shadow-[0_10px_24px_rgba(0,0,0,0.16)] transition hover:-translate-y-0.5 hover:bg-[rgba(255,182,178,0.24)]"
+          >
+            <span className="text-[13px]">☕</span>
+            Apoie o desenvolvedor
+          </a>
+        </div>
+
+        <Script type="text/javascript" src="https://cdnjs.buymeacoffee.com/1.0.0/button.prod.min.js" data-name="bmc-button" data-slug="Amad3eu" data-color="#FFDD00" data-emoji="" data-font="Cookie" data-text="Buy me a coffee" data-outline-color="#000000" data-font-color="#000000" data-coffee-color="#ffffff"></Script>
       </div>
     </div>
   );
