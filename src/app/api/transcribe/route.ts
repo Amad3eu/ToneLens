@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 
-export const runtime = "edge";
-
 export async function POST(req: NextRequest) {
   const form = await req.formData();
   const audio = form.get("audio");
@@ -21,6 +19,7 @@ export async function POST(req: NextRequest) {
   const body = new FormData();
   body.append("file", audio, audio.name);
   body.append("model", "whisper-1");
+  body.append("language", "pt");
 
   const response = await fetch("https://api.openai.com/v1/audio/transcriptions", {
     method: "POST",
@@ -35,5 +34,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: data.error?.message ?? "Falha na transcrição." }, { status: response.status });
   }
 
-  return NextResponse.json(data);
+  return NextResponse.json({ text: data.text ?? "", raw: data });
 }

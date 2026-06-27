@@ -63,8 +63,8 @@ export async function analyzeFile(
   const analysis = analyzeBuffer(audioBuffer);
 
   onProgress?.("Transcrevendo áudio…");
-  analysis.transcript = await transcribeFile(file).catch(() =>
-    "Transcrição local não disponível nesta versão. Integre uma API de Speech-to-Text para obter o texto real.",
+  analysis.transcript = await transcribeFile(file).catch((error: Error) =>
+    `Transcrição falhou: ${error.message}`,
   );
 
   return analysis;
@@ -85,7 +85,11 @@ async function transcribeFile(file: File): Promise<string> {
   }
 
   const data = await response.json();
-  return data.text ?? data.transcription ?? "";
+  if (typeof data.text !== "string" || data.text.trim() === "") {
+    throw new Error("Resposta da OpenAI não trouxe texto de transcrição.");
+  }
+
+  return data.text;
 }
 
 async function decode(arrayBuffer: ArrayBuffer): Promise<AudioBuffer> {

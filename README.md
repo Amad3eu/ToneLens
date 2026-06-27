@@ -1,63 +1,56 @@
 # ToneLens
 
-> **Aviso importante: este projeto é um protótipo de análise de áudio.** O objetivo é explorar transcrição e identificação de tom emocional em mensagens de voz. O sistema é experimental e pode errar em qualquer direção.
+> ToneLens é um protótipo de análise de áudio que combina transcrição e avaliação de tom vocal em mensagens de voz.
 
-Ferramenta web que analisa se a voz está muito alta, grave ou carregada e gera uma transcrição inicial de arquivos de áudio e vídeo.
+O foco do projeto é ajudar a identificar rapidamente se um áudio está com tom carregado, alto ou emocional, enquanto também gera uma transcrição inicial do conteúdo.
 
-Toda a análise roda **no seu navegador** — nenhum arquivo é enviado para servidor.
+## O que faz
 
-## Como funciona (V1 — heurística de tom e transcrição)
+- Analisa arquivos de áudio e vídeo enviados pelo usuário.
+- Extrai métricas de amplitude, dinâmica e saturação.
+- Gera um veredito simples sobre o tom do áudio.
+- Cria uma transcrição inicial via API de transcrição.
+- Exibe resultados no navegador com waveform e indicadores de evidência.
 
-Esta versão não compara o áudio com um modelo canônico. Em vez disso, procura padrões acústicos de voz carregada:
+## Como funciona
 
-- **Razão pico vs. fundo** — quanto o trecho mais alto sobressai sobre o silêncio de fundo.
-- **Salto repentino** — se o RMS dispara em poucos milissegundos depois de um período mais quieto.
-- **Saturação (clipping)** — fração de amostras estouradas, comum em áudios muito altos.
-- **Pico de amplitude** — quão perto da saturação total a faixa chega.
-- **Trecho alto contínuo** — duração somada acima de 60% do pico.
+A análise combina heurísticas de sinal de áudio com informações de amplitude e ruído, buscando padrões que indiquem voz intensa ou carregada. A transcrição é realizada por uma rota de API que encaminha o arquivo para o modelo `whisper-1` da OpenAI.
 
-Esses sinais são combinados num score de 0 a 100 que vira um veredito carimbado: **APROVADO**, **SUSPEITO** ou **REPROVADO**.
-
-## V2 (futuro)
-
-Vai usar fingerprint de áudio (estilo Shazam / Chromaprint) comparado com exemplos de voz e tom para melhorar a estimativa. Por enquanto, o sistema ainda não tem um conjunto de referência oficial.
-
-## Rodando localmente
+## Executando localmente
 
 ```bash
 npm install
 npm run dev
 ```
 
-### Configuração de transcrição
+Em seguida, abra [http://localhost:3000](http://localhost:3000).
 
-Para ativar a transcrição automática, configure a variável de ambiente:
+## Configuração de ambiente
+
+Crie um arquivo `.env.local` na raiz do projeto contendo:
 
 ```bash
-export OPENAI_API_KEY="sua_chave_aqui"
+OPENAI_API_KEY="sua_chave_aqui"
 ```
 
-A aplicação envia o arquivo para a rota de API `/api/transcribe`, que usa o modelo `whisper-1` da OpenAI.
+A chave é usada pela rota de API `/api/transcribe` para gerar a transcrição.
 
-Abra [http://localhost:3000](http://localhost:3000).
+## Stack do projeto
 
-## Stack
-
-- Next.js 16 (App Router) + TypeScript
+- Next.js 16 (App Router)
+- TypeScript
 - Tailwind CSS v4
-- Web Audio API (`decodeAudioData`) para extrair amostras de áudio de arquivos MP3, WAV, M4A, OGG, MP4, WebM…
-- Canvas 2D para o gráfico de forma de onda
+- Web Audio API
+- OpenAI Whisper (`whisper-1`)
 
-## Deploy
+## Estrutura principal
 
-Pensado para Vercel — `npm run build` gera build estático e a página é pré-renderizada.
+- `src/app/page.tsx` — página principal do app
+- `src/components/Analyzer.tsx` — interface de upload e resultados
+- `src/lib/audioAnalysis.ts` — lógica de análise de áudio
+- `src/app/api/transcribe/route.ts` — rota de transcrição com OpenAI
 
-## Estrutura
+## Observações
 
-- `src/lib/audioAnalysis.ts` — decode + análise pura (RMS, detecção de salto, score).
-- `src/components/Analyzer.tsx` — UI (upload, laudo carimbado, waveform, evidências).
-- `src/app/page.tsx` — página que monta o `<Analyzer />`.
-
-## Licença
-
-Faça o que quiser. Mas lembre: **é uma brincadeira**.
+- Este projeto é experimental e serve como protótipo.
+- A análise não substitui avaliações profissionais ou soluções comerciais.

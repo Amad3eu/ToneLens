@@ -141,57 +141,47 @@ function makeProtocolo() {
 
 function Hero() {
   return (
-    <div className="flex flex-col gap-5">
-      <div className="flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.18em] text-zinc-500 dark:text-zinc-500">
-        <span className="inline-block h-px w-8 bg-zinc-400 dark:bg-zinc-700" />
-        <span>Análise de tom e transcrição de áudio</span>
+    <div className="flex flex-col gap-6">
+      <div className="flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.18em] text-[rgba(255,225,222,0.88)]">
+        <span className="inline-block h-px w-10 bg-[rgba(255,197,196,0.65)]" />
+        <span>Hi-Fi Japonês · Visual áudio 技術 · トーン</span>
       </div>
 
-      <div className="flex items-center gap-4">
-        <Seal />
-        <div>
-          <h1 className="text-3xl sm:text-5xl font-bold tracking-tight leading-none">
-            ToneLens
-          </h1>
-          <p className="mt-2 font-mono text-[11px] uppercase tracking-wider text-zinc-500 dark:text-zinc-500">
-            Identifique o tom da voz e veja a transcrição instantânea
-          </p>
+      <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-5">
+            <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-[#f7f6f3] ring-2 ring-white/60 shadow-[0_12px_30px_rgba(0,0,0,0.12)]">
+              <img
+                src="/audio-editing(1).gif"
+                alt="ToneLens logo"
+                className="h-16 w-16 rounded-full object-cover"
+              />
+            </div>
+          <div>
+            <h1 className="text-4xl sm:text-6xl font-semibold tracking-tight leading-none text-rose-100 drop-shadow-[0_10px_30px_rgba(0,0,0,0.35)] marshall-logo">
+              ToneLens <span className="text-base font-normal tracking-[0.35em] text-[rgba(255,225,221,0.8)]">トーン</span>
+            </h1>
+            <p className="mt-2 max-w-2xl text-base sm:text-lg uppercase tracking-[0.28em] text-[rgba(255,225,221,0.85)]">
+              Reconhece tom, transcreve e protege cada arquivo com precisão.
+            </p>
+            <p className="mt-3 max-w-xl text-sm leading-6 text-[rgba(255,255,255,0.72)]">
+              Modo radar de som, gráfico de frequência e laudo instantâneo para controle de voz e segurança.
+            </p>
+          </div>
         </div>
       </div>
 
-      <div className="rounded-xl border-2 border-zinc-900 dark:border-zinc-100 p-5 paper-bg">
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-900 dark:text-zinc-100">
-          ↳ Utilidade Pública
+      <div className="rounded-3xl border border-[rgba(255,182,178,0.24)] p-6 hifi-panel">
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[rgba(255,225,221,0.72)]">
+          ↳ Sala de controle de áudio <span className="ml-2 inline-flex items-center rounded-full bg-[rgba(255,182,178,0.16)] px-2 py-0.5 text-[10px] uppercase tracking-[0.18em] text-rose-100">音声</span>
         </p>
-        <p className="mt-3 text-base sm:text-lg leading-relaxed text-zinc-900 dark:text-zinc-100">
-          O <strong>ToneLens</strong> te ajuda a entender o tom emocional do áudio
-          e traz uma primeira visão do conteúdo falado. Use este arquivo para
-          descobrir se a mensagem está calma, preocupada ou urgente.
+        <p className="mt-3 text-lg font-semibold text-white">
+          Analisa timbre, potência e padrão de fala com foco em clareza e risco.
+        </p>
+        <p className="mt-2 text-sm leading-6 text-[rgba(255,255,255,0.72)]">
+          Painel técnico, score de intensidade e recomendação de reprodução para segurança auditiva.
         </p>
       </div>
     </div>
-  );
-}
-
-function Seal() {
-  return (
-    <span
-      aria-hidden
-      className="relative inline-flex h-16 w-16 items-center justify-center rounded-full border-[3px] border-zinc-900 dark:border-zinc-100 bg-amber-400 text-zinc-900 shadow-[0_4px_0_0_rgba(0,0,0,0.9)] dark:shadow-[0_4px_0_0_rgba(255,255,255,0.6)]"
-    >
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth={2.3}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className="h-8 w-8"
-      >
-        <path d="M3 12h2l2-5 3 10 3-14 3 18 3-12 2 3h2" />
-      </svg>
-      <span className="absolute -inset-1 rounded-full border border-dashed border-zinc-900/40 dark:border-zinc-100/40" />
-    </span>
   );
 }
 
@@ -219,8 +209,8 @@ function DropZone({
       onClick={() => inputRef.current?.click()}
       className={`group relative cursor-pointer rounded-2xl border-[3px] border-dashed p-10 sm:p-14 text-center transition ${
         isDragging
-          ? "border-amber-500 bg-amber-50 dark:bg-amber-950/30"
-          : "border-zinc-900 dark:border-zinc-100 bg-white dark:bg-zinc-950 hover:bg-amber-50/50 dark:hover:bg-amber-950/10"
+          ? "border-rose-500 bg-[rgba(255,229,231,0.08)] dark:bg-rose-950/20"
+          : "border-zinc-900 dark:border-zinc-100 bg-white dark:bg-zinc-950 hover:bg-[rgba(255,229,231,0.08)]/50 dark:hover:bg-rose-950/15"
       }`}
     >
       <input
@@ -234,19 +224,21 @@ function DropZone({
           e.target.value = "";
         }}
       />
-      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-500">
-        Central de áudio
+      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[rgba(255,225,221,0.86)]">
+        Central de áudio <span className="ml-2 inline-flex items-center rounded-full bg-[rgba(255,182,178,0.16)] px-2 py-0.5 text-[10px] uppercase tracking-[0.18em] text-rose-100">音</span>
       </p>
-      <p className="mt-3 text-xl sm:text-2xl font-bold tracking-tight">
-        Envie seu áudio para analisar o tom
+      <p className="mt-3 text-2xl sm:text-3xl font-extrabold tracking-tight text-rose-100">
+        Selecione o arquivo e inicie a análise
       </p>
-      <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">
-        Arraste e solte ou clique para selecionar.
-        <br className="hidden sm:block" />
-        Aceitamos MP3, WAV, M4A, OGG, MP4, WebM.
+      <p className="mt-2 max-w-xl text-sm leading-6 text-[rgba(255,255,255,0.72)]">
+        Arraste ou toque para carregar. Suporta áudio e vídeo com processamento local rápido.
       </p>
-      <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-zinc-900 dark:border-zinc-100 px-4 py-1.5 text-xs font-medium">
-        <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+      <div className="mt-5 inline-flex items-center gap-2 rounded-full border border-[rgba(255,182,178,0.4)] bg-[rgba(255,255,255,0.05)] px-4 py-2 text-xs font-semibold text-[rgba(255,225,221,0.9)]">
+        <span className="inline-block h-2 w-2 rounded-full bg-rose-500 animate-pulse" />
+        Proteção auditiva ativa
+      </div>
+      <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-[rgba(255,182,178,0.4)] bg-[rgba(255,255,255,0.04)] px-4 py-1.5 text-xs font-semibold text-[rgba(255,225,221,0.9)]">
+        <span className="inline-block h-1.5 w-1.5 rounded-full bg-rose-500 animate-pulse" />
         Análise 100% local — nada sai do seu aparelho
       </div>
     </div>
@@ -266,12 +258,12 @@ function AnalyzingPanel({
   }, [progress]);
 
   return (
-    <div className="rounded-2xl border-2 border-zinc-900 dark:border-zinc-100 paper-bg p-6">
-      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-500">
-        Analisando tom e transcrição
+    <div className="rounded-3xl border border-[rgba(255,182,178,0.25)] bg-[rgba(255,255,255,0.04)] p-6 hifi-panel">
+      <p className="font-mono text-[9px] uppercase tracking-[0.3em] text-[rgba(255,225,221,0.72)]">
+        Analisando tom, espectro e pulso
       </p>
-      <p className="mt-1 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-        Aguarde, extraindo o tom do áudio…
+      <p className="mt-1 text-xl font-bold text-[rgba(255,255,255,0.95)]">
+        Aguarde, o laudo técnico está sendo montado…
       </p>
 
       <ul className="mt-5 space-y-2 font-mono text-sm">
@@ -283,7 +275,7 @@ function AnalyzingPanel({
               key={step.key}
               className={`flex items-center gap-3 ${
                 done
-                  ? "text-emerald-700 dark:text-emerald-400"
+                  ? "text-rose-700 dark:text-rose-400"
                   : active
                     ? "text-zinc-900 dark:text-zinc-100"
                     : "text-zinc-400 dark:text-zinc-600"
@@ -336,9 +328,9 @@ function Results({
 
       <button
         onClick={onReset}
-        className="self-start rounded-full border-2 border-zinc-900 dark:border-zinc-100 bg-white dark:bg-zinc-950 px-5 py-2.5 text-sm font-semibold uppercase tracking-wider hover:bg-zinc-900 hover:text-white dark:hover:bg-zinc-100 dark:hover:text-zinc-900 transition"
+        className="self-start rounded-full border border-[rgba(255,182,178,0.4)] bg-[rgba(255,255,255,0.05)] px-5 py-2.5 text-sm font-semibold uppercase tracking-wider text-rose-100 hover:bg-[rgba(255,182,178,0.14)] transition"
       >
-        Periciar novo arquivo
+        Examinar outro áudio
       </button>
     </div>
   );
@@ -399,22 +391,22 @@ function ShareButton({
       <button
         onClick={onClick}
         disabled={disabled}
-        className="group relative w-full overflow-hidden rounded-2xl border-2 border-zinc-900 dark:border-zinc-100 bg-amber-400 px-6 py-5 text-zinc-900 shadow-[0_4px_0_0_rgba(0,0,0,0.9)] hover:translate-y-0.5 hover:shadow-[0_2px_0_0_rgba(0,0,0,0.9)] active:translate-y-1 active:shadow-none transition disabled:opacity-70 disabled:cursor-wait"
+        className="group relative w-full overflow-hidden rounded-3xl border border-[rgba(255,182,178,0.35)] bg-[rgba(255,182,178,0.18)] px-6 py-5 text-rose-100 shadow-[0_24px_40px_rgba(0,0,0,0.25)] hover:bg-[rgba(255,182,178,0.22)] active:translate-y-0.5 active:shadow-[0_12px_20px_rgba(0,0,0,0.25)] transition disabled:opacity-70 disabled:cursor-wait"
       >
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-4 text-left">
-            <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-amber-400">
+            <span className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-zinc-900 text-rose-400">
               {state === "generating" ? (
-                <span className="h-5 w-5 animate-spin rounded-full border-2 border-amber-400/30 border-t-amber-400" />
+                <span className="h-5 w-5 animate-spin rounded-full border-2 border-rose-400/30 border-t-rose-400" />
               ) : (
                 <ShareIcon />
               )}
             </span>
             <div>
-              <p className="text-lg sm:text-xl font-bold tracking-tight">
+              <p className="text-lg sm:text-xl font-semibold tracking-tight text-white">
                 {label}
               </p>
-              <p className="font-mono text-[10px] sm:text-[11px] uppercase tracking-[0.18em] opacity-80">
+              <p className="font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.28em] opacity-80">
                 {sub}
               </p>
             </div>
@@ -431,7 +423,7 @@ function ShareButton({
           href={SHARE_URL}
           target="_blank"
           rel="noreferrer"
-          className="underline decoration-amber-500 underline-offset-2"
+          className="underline decoration-rose-400 underline-offset-2"
         >
           amad3eu.deno.dev
         </a>
@@ -449,24 +441,24 @@ function TranscriptPanel({
   tone: AnalysisResult["tone"];
 }) {
   return (
-    <div className="rounded-2xl border-2 border-zinc-900 dark:border-zinc-100 bg-white dark:bg-zinc-950 overflow-hidden">
-      <div className="border-b-2 border-zinc-900/10 dark:border-zinc-100/10 px-5 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-500">
-        Transcrição automática
+    <div className="rounded-3xl border border-[rgba(255,182,178,0.25)] bg-[rgba(255,255,255,0.04)] overflow-hidden hifi-panel-strong">
+      <div className="border-b border-[rgba(255,182,178,0.18)] px-5 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-[rgba(255,225,221,0.72)]">
+        Transcrição 自動 <span className="ml-2 inline-flex items-center rounded-full bg-[rgba(255,182,178,0.16)] px-2 py-0.5 text-[10px] uppercase tracking-[0.18em] text-rose-100">テキスト</span>
       </div>
       <div className="p-5 space-y-4">
-        <div className="rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 p-4">
-          <p className="text-sm font-medium text-zinc-900 dark:text-zinc-100">
-            Tom detectado: <span className="font-bold">{tone.label}</span>
+          <div className="rounded-3xl border border-[rgba(255,182,178,0.3)] bg-[rgba(255,255,255,0.06)] p-4">
+          <p className="text-base font-semibold text-rose-100">
+            Tom detectado: <span className="font-bold text-white">{tone.label}</span>
           </p>
-          <p className="mt-2 text-xs text-zinc-500 dark:text-zinc-400">
+          <p className="mt-2 text-xs text-[rgba(255,225,221,0.72)]">
             {tone.description}
           </p>
         </div>
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-500">
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[rgba(255,225,221,0.72)]">
             Texto estimado
           </p>
-          <p className="mt-3 rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 p-4 text-sm leading-6 text-zinc-700 dark:text-zinc-300">
+          <p className="mt-3 rounded-3xl border border-[rgba(255,182,178,0.25)] bg-[rgba(255,255,255,0.05)] p-4 text-sm leading-6 text-[rgba(255,255,255,0.85)]">
             {transcript}
           </p>
         </div>
@@ -500,7 +492,7 @@ const VERDICT_COPY = {
     title: "Áudio liberado para reprodução",
     body:
       "Não foram identificados sinais de tom agressivo ou urgente. Você pode ouvir com tranquilidade, mas mantenha o bom senso.",
-    color: "emerald",
+    color: "rose",
   },
   suspect: {
     stamp: "SUSPEITO",
@@ -508,7 +500,7 @@ const VERDICT_COPY = {
     title: "Atenção: reproduza com cuidado",
     body:
       "Detectamos um tom mais carregado do que o habitual. Recomendamos fone de ouvido e volume baixo.",
-    color: "amber",
+    color: "rose",
   },
   danger: {
     stamp: "REPROVADO",
@@ -531,15 +523,10 @@ function LaudoPanel({
 }) {
   const v = VERDICT_COPY[result.verdict];
   const colorMap = {
-    emerald: {
-      stamp: "text-emerald-700 border-emerald-700",
-      title: "text-emerald-800 dark:text-emerald-300",
-      ring: "ring-emerald-300/60 dark:ring-emerald-700/40",
-    },
-    amber: {
-      stamp: "text-amber-700 border-amber-700",
-      title: "text-amber-800 dark:text-amber-300",
-      ring: "ring-amber-300/60 dark:ring-amber-700/40",
+    rose: {
+      stamp: "text-rose-700 border-rose-700",
+      title: "text-rose-800 dark:text-rose-300",
+      ring: "ring-rose-300/60 dark:ring-rose-700/40",
     },
     red: {
       stamp: "text-red-700 border-red-700",
@@ -559,41 +546,41 @@ function LaudoPanel({
   }, []);
 
   return (
-    <div className="rounded-2xl border-2 border-zinc-900 dark:border-zinc-100 paper-bg overflow-hidden">
-      <div className="flex items-center justify-between border-b-2 border-dashed border-zinc-900/40 dark:border-zinc-100/30 px-5 py-3 font-mono text-[10px] uppercase tracking-[0.2em]">
+    <div className="rounded-3xl border border-[rgba(255,182,178,0.25)] paper-bg overflow-hidden hifi-panel">
+      <div className="flex items-center justify-between border-b border-[rgba(255,182,178,0.18)] px-5 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-[rgba(255,225,221,0.72)]">
         <span>Laudo Técnico nº {protocolo}</span>
-        <span className="text-zinc-500">{dateStr}</span>
+        <span className="text-[rgba(255,255,255,0.75)]">{dateStr}</span>
       </div>
 
       <div className="grid sm:grid-cols-[1fr_auto] gap-6 p-6 sm:p-8 items-center">
         <div>
-          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-500">
+          <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[rgba(255,225,221,0.72)]">
             Veredito
           </p>
           <h2 className={`mt-1 text-2xl sm:text-3xl font-bold leading-tight ${colorMap.title}`}>
             {v.title}
           </h2>
-          <p className="mt-3 text-sm sm:text-base text-zinc-700 dark:text-zinc-300 leading-relaxed">
+          <p className="mt-3 text-sm sm:text-base text-[rgba(255,255,255,0.8)] leading-relaxed">
             {v.body}
           </p>
 
           <div className="mt-5">
             <div className="flex items-baseline justify-between">
-              <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-500">
+              <span className="font-mono text-[10px] uppercase tracking-[0.2em] text-[rgba(255,225,221,0.72)]">
                 Índice de intensidade vocal
               </span>
               <span className={`text-2xl font-bold tabular-nums ${colorMap.title}`}>
                 {result.dangerScore}
-                <span className="text-sm font-medium opacity-70">/100</span>
+                <span className="text-sm font-medium text-[rgba(255,225,221,0.86)]">/100</span>
               </span>
             </div>
-            <div className="mt-2 h-3 w-full overflow-hidden rounded-full border border-zinc-900/30 dark:border-zinc-100/30 bg-white/60 dark:bg-zinc-900/60">
+            <div className="mt-2 h-3 w-full overflow-hidden rounded-full border border-[rgba(255,182,178,0.18)] bg-[rgba(255,255,255,0.08)]">
               <div
-                className="h-full rounded-full bg-linear-to-r from-emerald-400 via-amber-400 to-red-500 transition-[width] duration-700"
+                className="h-full rounded-full bg-linear-to-r from-rose-300 via-rose-500 to-red-500 transition-[width] duration-700"
                 style={{ width: `${result.dangerScore}%` }}
               />
             </div>
-            <div className="mt-1 flex justify-between font-mono text-[9px] uppercase tracking-widest text-zinc-500 dark:text-zinc-500">
+            <div className="mt-1 flex justify-between font-mono text-[9px] uppercase tracking-widest text-[rgba(255,225,221,0.72)]">
               <span>seguro</span>
               <span>suspeito</span>
               <span>perigo</span>
@@ -607,7 +594,7 @@ function LaudoPanel({
       </div>
 
       <div
-        className={`border-t-2 border-dashed border-zinc-900/40 dark:border-zinc-100/30 px-5 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-500 truncate ring-inset ${colorMap.ring}`}
+        className={`border-t border-dashed border-[rgba(255,182,178,0.18)] px-5 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-[rgba(255,225,221,0.72)] truncate ring-inset ${colorMap.ring}`}
       >
         Arquivo periciado: {fileName}
       </div>
@@ -641,12 +628,12 @@ function Stamp({
 
 function WaveformPanel({ result }: { result: AnalysisResult }) {
   return (
-    <div className="rounded-2xl border-2 border-zinc-900 dark:border-zinc-100 bg-white dark:bg-zinc-950 overflow-hidden">
-      <div className="flex items-center justify-between border-b-2 border-zinc-900/10 dark:border-zinc-100/10 px-5 py-3">
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-500">
+    <div className="rounded-3xl border border-[rgba(255,182,178,0.25)] bg-[rgba(255,255,255,0.05)] overflow-hidden hifi-panel-strong">
+      <div className="flex items-center justify-between border-b border-[rgba(255,182,178,0.18)] px-5 py-3">
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[rgba(255,225,221,0.72)]">
           Análise da forma de onda
         </p>
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-500">
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[rgba(255,225,221,0.72)]">
           {result.durationSec.toFixed(1)}s · {result.sampleRate} Hz ·{" "}
           {result.numChannels === 1 ? "mono" : "estéreo"}
         </p>
@@ -777,14 +764,14 @@ function Waveform({ result }: { result: AnalysisResult }) {
         )}
         {!result.jump && (
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-            <span className="rounded-full border border-emerald-400/70 bg-white/80 dark:bg-zinc-900/80 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-emerald-700 dark:text-emerald-400">
+            <span className="rounded-2xl border border-dashed border-rose-200/80 bg-[rgba(15,23,42,0.88)] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] text-rose-100 shadow-[0_0_0_12px_rgba(255,182,178,0.05)]">
               Sem salto de volume suspeito
             </span>
           </div>
         )}
       </div>
 
-      <div className="mt-3 flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-zinc-500 dark:text-zinc-500">
+      <div className="mt-3 flex items-center justify-between font-mono text-[10px] uppercase tracking-widest text-[rgba(255,225,221,0.72)]">
         <span>00:00</span>
         <span>
           {result.jump
@@ -806,7 +793,7 @@ function Callout({ leftPct, label }: { leftPct: number; label: string }) {
       style={{ left: `${clamped}%` }}
     >
       <div
-        className={`relative rounded-md border-2 border-red-600 bg-white dark:bg-zinc-950 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-red-700 dark:text-red-400 whitespace-nowrap ${flipLeft ? "-translate-x-[calc(100%-40px)]" : "translate-x-0"}`}
+        className={`relative rounded-md border-2 border-[rgba(239,68,68,0.9)] bg-[rgba(255,255,255,0.08)] px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-[rgba(239,68,68,0.95)] whitespace-nowrap ${flipLeft ? "-translate-x-[calc(100%-40px)]" : "translate-x-0"}`}
       >
         ↓ {label}
       </div>
@@ -860,18 +847,18 @@ function EvidencePanel({ result }: { result: AnalysisResult }) {
   ];
 
   return (
-    <div className="rounded-2xl border-2 border-zinc-900 dark:border-zinc-100 bg-white dark:bg-zinc-950 overflow-hidden">
-      <div className="border-b-2 border-zinc-900/10 dark:border-zinc-100/10 px-5 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-500">
+    <div className="rounded-3xl border border-[rgba(255,182,178,0.25)] bg-[rgba(255,255,255,0.05)] overflow-hidden hifi-panel-strong">
+      <div className="border-b border-[rgba(255,182,178,0.18)] px-5 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-[rgba(255,225,221,0.72)]">
         Evidências técnicas
       </div>
-      <div className="grid grid-cols-2 sm:grid-cols-4 divide-x-2 divide-y-2 sm:divide-y-0 divide-zinc-900/10 dark:divide-zinc-100/10">
+      <div className="grid grid-cols-2 sm:grid-cols-4 divide-x divide-y sm:divide-y-0 divide-[rgba(255,182,178,0.12)]">
         {items.map((it) => (
           <div key={it.label} className="p-4">
-            <p className="font-mono text-[10px] uppercase tracking-wider text-zinc-500 dark:text-zinc-500">
+            <p className="font-mono text-[10px] uppercase tracking-wider text-[rgba(255,225,222,0.88)]">
               {it.label}
             </p>
-            <p className="mt-2 text-xl font-bold tabular-nums">{it.value}</p>
-            <p className="mt-1 text-[10px] leading-tight text-zinc-400 dark:text-zinc-500">
+            <p className="mt-2 text-xl font-bold tabular-nums text-white">{it.value}</p>
+            <p className="mt-1 text-[10px] leading-tight text-[rgba(255,255,255,0.65)]">
               {it.hint}
             </p>
           </div>
@@ -890,13 +877,13 @@ function ListenPanel({
 }) {
   const isRisky = result.verdict !== "safe";
   return (
-    <div className="rounded-2xl border-2 border-zinc-900 dark:border-zinc-100 bg-white dark:bg-zinc-950 overflow-hidden">
+    <div className="rounded-3xl border border-[rgba(255,182,178,0.25)] bg-[rgba(255,255,255,0.04)] overflow-hidden hifi-panel">
       {isRisky && <div className="hazard-stripes h-3" />}
       <div className="p-5">
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-500">
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[rgba(255,225,221,0.72)]">
           Reprodução controlada
         </p>
-        <p className="mt-1 text-sm text-zinc-700 dark:text-zinc-300">
+        <p className="mt-1 text-sm text-[rgba(255,255,255,0.78)]">
           {result.verdict === "danger"
             ? "Por sua conta e risco. Reduza o volume antes de tocar."
             : result.verdict === "suspect"
@@ -919,10 +906,10 @@ function FooterMission() {
   return (
     <div className="border-t-2 border-dashed border-zinc-900/30 dark:border-zinc-100/20 pt-5 space-y-4">
       <div>
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-500 dark:text-zinc-500">
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[rgba(255,225,221,0.72)]">
           Sobre esta versão
         </p>
-        <p className="mt-2 text-xs leading-relaxed text-zinc-600 dark:text-zinc-400">
+        <p className="mt-2 text-xs leading-relaxed text-[rgba(255,255,255,0.7)]">
             <strong>V1 — heurística de tom.</strong> Identificamos saltos
             repentinos de RMS, saturação e picos típicos de voz intensa.
             A versão V2 incluirá comparação por fingerprint contra exemplos de
@@ -930,11 +917,11 @@ function FooterMission() {
         </p>
       </div>
 
-      <div className="rounded-lg border border-dashed border-zinc-900/40 dark:border-zinc-100/30 paper-bg p-4">
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-zinc-700 dark:text-zinc-300">
+      <div className="rounded-3xl border border-[rgba(255,182,178,0.2)] bg-[rgba(255,255,255,0.04)] p-4">
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-[rgba(255,225,222,0.88)]">
           Aviso oficial · leia com seriedade
         </p>
-        <p className="mt-2 text-xs leading-relaxed text-zinc-700 dark:text-zinc-300">
+        <p className="mt-2 text-xs leading-relaxed text-[rgba(255,255,255,0.72)]">
           O ToneLens é um protótipo experimental. Não há departamento, não há
           laudo oficial e não há garantia nenhuma — apenas uma análise inicial.
           O sistema pode errar em qualquer direção: detectar um tom mais forte
@@ -943,13 +930,13 @@ function FooterMission() {
       </div>
 
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
-        <p className="text-xs text-zinc-600 dark:text-zinc-400">
+        <p className="text-xs text-[rgba(255,255,255,0.65)]">
           Desenvolvido por{" "}
           <a
             href="https://amad3eu.deno.dev"
             target="_blank"
             rel="noreferrer"
-            className="font-semibold text-zinc-900 dark:text-zinc-100 underline decoration-amber-500 decoration-2 underline-offset-2 hover:decoration-amber-400"
+            className="font-semibold text-rose-100 underline decoration-rose-400 decoration-2 underline-offset-2 hover:decoration-rose-300"
           >
             amad3eu
           </a>
@@ -958,7 +945,7 @@ function FooterMission() {
           href="https://github.com/amad3eu"
           target="_blank"
           rel="noreferrer"
-          className="inline-flex items-center gap-2 rounded-full border-2 border-zinc-900 dark:border-zinc-100 bg-white dark:bg-zinc-950 px-4 py-1.5 text-xs font-semibold uppercase tracking-wider hover:bg-zinc-900 hover:text-white dark:hover:bg-zinc-100 dark:hover:text-zinc-900 transition"
+          className="inline-flex items-center gap-2 rounded-full border border-[rgba(255,182,178,0.35)] bg-[rgba(255,255,255,0.05)] px-4 py-1.5 text-xs font-semibold uppercase tracking-wider text-rose-100 hover:bg-[rgba(255,182,178,0.14)] transition"
         >
           <GithubIcon />
           Projeto open source
